@@ -109,8 +109,8 @@ export default function DepartamentosPage() {
   if (!mounted) return null;
 
   return (
-    <div className="p-6 flex flex-col gap-6">
-      <header className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+    <div className="p-6 flex flex-col gap-7  bg-white rounded-xl border border-gray-200 shadow-sm">
+      <header className="flex justify-between items-center p-2">
         <h1 className="text-2xl font-bold text-gray-900">Departamentos</h1>
         <Button color="primary" onClick={() => { setDeptoAEditar(null); setIsModalOpen(true); }}>
           Nuevo Departamento

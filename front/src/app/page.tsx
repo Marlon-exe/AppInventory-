@@ -83,21 +83,35 @@ export default function HomePage() {
 
   //  Tabla
   const cargarTabla = useCallback(async (page: number = 1) => {
+    if (!rangoSemanas) return;
     try {
       setLoading(true);
-      const res: ApiResponseEntregas = await fetch(`http://localhost:4000/api/producto-entregado?page=${page}`).then(r => r.json());
+      const inicio = rangoSemanas.start.toString();
+      const fin = rangoSemanas.end.toString();
+
+      const res: ApiResponseEntregas = await fetch(`http://localhost:4000/api/producto-entregado?page=${page}&inicio=${inicio}&fin=${fin}`
+      ).then(r => r.json());
       if (res.value) {
         setEntregas(res.data.registros);
         setPagination({ actual: res.data.paginaActual, totalPaginas: res.data.paginas });
       }
-    } catch (e) { console.error(e); } finally { setLoading(false); }
-  }, []);
+    } catch (e) {
+      console.error(e);
+    }
+    finally {
+      setLoading(false);
+    }
+  }, [rangoSemanas]);
 
 
   useEffect(() => {
     cargarCatalogos();
+  }, [cargarCatalogos]);
+
+  useEffect(() => {
+    if (!rangoSemanas) return;
     cargarTabla(1);
-  }, [cargarCatalogos, cargarTabla]);
+  }, [rangoSemanas, productos, cargarGraficos]);
 
   useEffect(() => {
     cargarGraficos();
@@ -179,10 +193,12 @@ export default function HomePage() {
     }
   };
   return (
-    <div className="p-1">
-      <div className="flex justify-between items-center mb-4">
+    <div className="p-1 ">
+      <div className="bg-white p-6 rounded-2xl shadow-sm flex flex-col gap-5">
+      <div className="flex justify-between items-center mb-4 ">
         <h1 className="text-2xl font-bold text-gray-800">Panel de control</h1>
-        <Button color="primary" onClick={() => {
+        <Button color="primary"  
+        onClick={() => {
           setEntregaAEditar(null);
           setFormData({ id_persona_retiro: "", id_persona_entrega: "" });
           setIsModalOpen(true);
@@ -191,10 +207,8 @@ export default function HomePage() {
         </Button>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl shadow-sm flex flex-col gap-10">
-
         <div className="flex flex-col gap-4">
-          <div className="w-50 self-end">
+          <div className="w-55  self-end">
             <DateRangePickerControlled value={rangoSemanas} onChange={setRangoSemanas} />
           </div>
           <div className="w-full h-75">

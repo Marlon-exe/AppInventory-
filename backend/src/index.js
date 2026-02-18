@@ -9,6 +9,7 @@ import departamendoRouter from './routers/departamento.router.js';
 import personaRouter from './routers/persona.router.js';
 import productoRouter from './routers/producto.router.js';
 import productoEntregadoRouter from './routers/persona_entrega.router.js';
+import catalogoRouter from './routers/catalogo.router.js'
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -49,6 +50,7 @@ app.use('/api/departamento', departamendoRouter);
 app.use('/api/persona', personaRouter);
 app.use('/api/producto', productoRouter);
 app.use('/api/producto-entregado', productoEntregadoRouter);
+app.use('/api/catalogo', catalogoRouter);
 
 const init = async () => {
   try {
@@ -65,3 +67,6 @@ const init = async () => {
   }
 }
 init();
+
+
+//http://localhost:4000/api/catalogo?valor=A3

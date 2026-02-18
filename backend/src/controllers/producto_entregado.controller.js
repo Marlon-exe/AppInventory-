@@ -23,7 +23,7 @@ export class ProductoEntregadoCtrl {
                 prod.tipo_producto AS producto
             FROM producto_entregado pe
             INNER JOIN producto prod ON pe.id_producto = prod.id_producto
-            WHERE pe.fecha_entrega BETWEEN $1 AND $2
+            WHERE pe.fecha_entrega::date BETWEEN $1 AND $2
             ORDER BY pe.fecha_entrega ASC;`
 
       const result = await pool.query(query, [inicio, fin]);
@@ -41,9 +41,20 @@ export class ProductoEntregadoCtrl {
 
   static getAll = async (req, res) => {
     try {
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 10;
+      const page = parseInt(req.query.page, 10) || 1;
+      const limit = parseInt(req.query.limit, 10) || 10;
       const offset = (page - 1) * limit;
+
+      const { inicio, fin } = req.query;
+      const rangoTrue = Boolean(inicio && fin);
+
+
+      const whereData = rangoTrue
+        ? `WHERE pe.fecha_entrega::date BETWEEN $3 AND $4`
+        : ``;
+      const whereCount = rangoTrue
+        ? `WHERE pe.fecha_entrega::date BETWEEN $1 AND $2`
+        : "";
 
       const query = `
                 SELECT 
@@ -62,17 +73,25 @@ export class ProductoEntregadoCtrl {
                 INNER JOIN persona p_entrega ON pe.id_persona_entrega = p_entrega.id_persona
                 INNER JOIN producto prod ON pe.id_producto = prod.id_producto
                 INNER JOIN departamento dep ON p_retiro.id_departamento = dep.id_departamento
+                ${whereData}
                 ORDER BY pe.fecha_entrega DESC
                 LIMIT $1 OFFSET $2;
             `
-      const countQuery = `SELECT COUNT(*) FROM producto_entregado`;
+      const countQuery = `SELECT COUNT(*) FROM producto_entregado pe ${whereCount}`;
 
+      const dataParams = rangoTrue
+        ? [limit, offset, inicio, fin]
+        : [limit, offset];
+
+      const countParams = rangoTrue
+        ? [inicio, fin]
+        : [];
       const [result, countResult] = await Promise.all([
-        pool.query(query, [limit, offset]),
-        pool.query(countQuery)
+        pool.query(query, dataParams),
+      pool.query(countQuery, countParams)
       ]);
 
-      const totalRows = parseInt(countResult.rows[0].count);
+      const totalRows = parseInt(countResult.rows[0].count,10);
 
       return Utils.serverResponse({
         response: res,

@@ -37,18 +37,16 @@ export interface ApiResponseEntregas {
     };
 }
 
-
+export type ChartRow ={name:string}& Record<string,number>;
 
 //funcion que procesa la fecha por semana
 export const transformarDatosParaGrafico = (productosAPI: any[], entregasAPI: any[]) => {
 
     const tipo_producto = productosAPI.map(p => p.tipo_producto);
 
-
     const registrosPorDia: Record<string, any> = {};
 
     entregasAPI.forEach((entrega) => {
-        //  'YYYY-MM-DD'
         const fecha = entrega.fecha;
 
         if (!registrosPorDia[fecha]) {

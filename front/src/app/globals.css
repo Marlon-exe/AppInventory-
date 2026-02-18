@@ -1344,17 +1344,17 @@
         --outline-color-brand: var(--color-border-brand);
         --outline-color-brand_alt: var(--color-border-brand_alt);
     }
+}
 
-    nextjs-portal,
-    #ndv-base-container {
-        display: none !important;
-    }
-    /* src/app/globals.css */
+nextjs-portal,
+#ndv-base-container {
+    display: none !important;
+}
 
-/* Ataca cualquier posible elemento que genere el borde azul/negro */
+/* src/app/globals.css */
+
 :focus {
     outline: none !important;
     box-shadow: none !important;
-}
-  
+
 }

@@ -11,12 +11,11 @@ const navItemsWithDividers: (NavItemType | NavItemDividerType)[] = [
         href: "/",
         icon: HomeLine,
     },
-    /*{
-        label: "Entregas",
-        href: "/entregas",
-        icon: BarChartSquare02,
+    {
+        label: "Catalogo",
+        href: "/catalogo",
         icon: Package,
-    },*/
+    },
     {
         label: "Inventario",
         href: "/inventario",

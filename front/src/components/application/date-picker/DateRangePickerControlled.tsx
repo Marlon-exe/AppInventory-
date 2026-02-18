@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react";
 import { getLocalTimeZone, today } from "@internationalized/date";
-import { DateRangePicker } from "./date-range-picker"; // Ajusta la ruta a tu archivo base
+import { DateRangePicker } from "./date-range-picker"; 
 import type { DateValue } from "react-aria-components";
 
 const now = today(getLocalTimeZone());

@@ -65,7 +65,7 @@ export const BarChart = ({ data, productos }: BarData) => {
                         return dias[index] || value;
                     }}
                 />
-                <YAxis axisLine={false} tickLine={false}  />
+                <YAxis axisLine={false} tickLine={false}  allowDecimals={false} />
                 <Tooltip
                     content={<ChartTooltipContent />}
                     labelFormatter={(value) => {

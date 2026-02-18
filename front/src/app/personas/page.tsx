@@ -161,8 +161,8 @@ export default function PersonaPage() {
   if (!mounted) return null;
 
   return (
-    <div className="p-6 flex flex-col gap-6">
-      <header className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+    <div className="p-6 flex flex-col gap-6 bg-white rounded-xl border border-gray-200 shadow-sm">
+      <header className="flex justify-between items-center p-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Personal</h1>
           
