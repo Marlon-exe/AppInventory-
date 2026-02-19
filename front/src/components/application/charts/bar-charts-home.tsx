@@ -1,31 +1,37 @@
-"use client"
-import { Bar, CartesianGrid, Label, Legend, BarChart as RechartsBarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+"use client";
+
+import { Bar, CartesianGrid, Legend, BarChart as RechartsBarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChartLegendContent, ChartTooltipContent } from "@/components/application/charts/charts-base";
 import { useBreakpoint } from "@/hooks/use-breakpoint";
 
-
-//Datos que para la barra que son: la fecha transformada en semanas y  la cantidad de producto.
 interface BarData {
-    data: any[],
-    productos: string[]
+    data: any[];
+    productos: string[];
 }
+
+const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+
+const esLaborable = (isoFecha: string) => {
+    const d = new Date(isoFecha);
+    const day = d.getDay();
+    return day >= 1 && day <= 5;
+};
 
 export const BarChart = ({ data, productos }: BarData) => {
     const isDesktop = useBreakpoint("lg");
 
-    /*const colors: Record<string, string> = {
-        A: "text-utility-brand-700",
-        B: "text-utility-brand-500",
-        C: "text-utility-gray-200",
-    };*/
     const palette = [
         "text-utility-brand-700",
         "text-utility-brand-500",
         "text-utility-brand-300",
         "text-utility-gray-300",
-        "text-utility-blue-500"
+        "text-utility-blue-500",
     ];
-    if (!data || data.length === 0) {
+
+
+    const dataFiltrada = (data ?? []).filter((row) => row?.fecha && esLaborable(row.fecha));
+
+    if (!dataFiltrada || dataFiltrada.length === 0) {
         return (
             <div className="flex items-center justify-center h-60 text-gray-500">
                 No hay datos disponibles para el rango seleccionado
@@ -34,9 +40,9 @@ export const BarChart = ({ data, productos }: BarData) => {
     }
 
     return (
-        <ResponsiveContainer  width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={300}>
             <RechartsBarChart
-                data={data}
+                data={dataFiltrada}
                 accessibilityLayer={false}
                 className="text-tertiary [&_.recharts-text]:text-xs "
                 margin={{
@@ -56,26 +62,26 @@ export const BarChart = ({ data, productos }: BarData) => {
                 />
 
                 <XAxis
-                    fill="currentColor"
+                    dataKey="fecha"
                     axisLine={false}
                     tickLine={false}
                     tickMargin={11}
-                    tickFormatter={(value, index) => {
-                        const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
-                        return dias[index] || value;
-                    }}
-                />
-                <YAxis axisLine={false} tickLine={false}  allowDecimals={false} />
-                <Tooltip
-                    content={<ChartTooltipContent />}
-                    labelFormatter={(value) => {
-                        const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
-                        // Muestra los dia en en el recudor de las barras
-                        return dias[value] || value;
+                    tickFormatter={(value) => {
+                        const d = new Date(value + "T12:00:00"); // value: "YYYY-MM-DD"
+                        return diasSemana[d.getDay()];
                     }}
                 />
 
-                {/* Barras*/}
+                <YAxis axisLine={false} tickLine={false} allowDecimals={false} />
+
+                <Tooltip
+                    content={<ChartTooltipContent />}
+                    labelFormatter={(value) => {
+                        const d = new Date(value);
+                        return `${diasSemana[d.getDay()]} ${d.toLocaleDateString("es-EC")}`; // ✅ correcto
+                    }}
+                />
+
                 {productos.map((prod, index) => (
                     <Bar
                         key={prod}
@@ -85,11 +91,9 @@ export const BarChart = ({ data, productos }: BarData) => {
                         fill="currentColor"
                         className={palette[index % palette.length]}
                         maxBarSize={isDesktop ? 32 : 16}
-
                         radius={index === productos.length - 1 ? [6, 6, 0, 0] : [0, 0, 0, 0]}
                     />
                 ))}
-
             </RechartsBarChart>
         </ResponsiveContainer>
     );

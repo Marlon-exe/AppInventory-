@@ -10,6 +10,8 @@ import { SearchSelect } from "@/components/application/forms/search-select";
 import { Modal, ModalOverlay, Dialog } from "@/components/application/modals/modal";
 import type { RangeValue, DateValue } from "react-aria-components";
 import { getLocalTimeZone, today, startOfWeek, endOfWeek } from "@internationalized/date";
+import { imprimirEntregas } from "@/lib/print-utils";
+
 
 const COLUMNAS_ENTREGAS: ColumnConfig<RegistroEntrega>[] = [
   { key: "departamento", label: "Departamento", isRowHeader: true, allowsSorting: false },
@@ -195,17 +197,17 @@ export default function HomePage() {
   return (
     <div className="p-1 ">
       <div className="bg-white p-6 rounded-2xl shadow-sm flex flex-col gap-5">
-      <div className="flex justify-between items-center mb-4 ">
-        <h1 className="text-2xl font-bold text-gray-800">Panel de control</h1>
-        <Button color="primary"  
-        onClick={() => {
-          setEntregaAEditar(null);
-          setFormData({ id_persona_retiro: "", id_persona_entrega: "" });
-          setIsModalOpen(true);
-        }}>
-          Nueva Entrega
-        </Button>
-      </div>
+        <div className="flex justify-between items-center mb-4 ">
+          <h1 className="text-2xl font-bold text-gray-800">Panel de control</h1>
+          <Button color="primary"
+            onClick={() => {
+              setEntregaAEditar(null);
+              setFormData({ id_persona_retiro: "", id_persona_entrega: "" });
+              setIsModalOpen(true);
+            }}>
+            Nueva Entrega
+          </Button>
+        </div>
 
         <div className="flex flex-col gap-4">
           <div className="w-55  self-end">
@@ -214,6 +216,19 @@ export default function HomePage() {
           <div className="w-full h-75">
             <BarChart data={chartInfo.data} productos={chartInfo.productos} />
           </div>
+        </div>
+        <div>
+          <Button
+            color="secondary"
+            onClick={() => {
+              if (!rangoSemanas) return;
+              imprimirEntregas(
+                rangoSemanas.start.toString(),
+                rangoSemanas.end.toString()
+              );
+            }}
+          >
+            Imprimir</Button>
         </div>
 
         <TableModel
@@ -237,12 +252,11 @@ export default function HomePage() {
         />
       </div>
 
-
       <ModalOverlay isOpen={isModalOpen} onOpenChange={setIsModalOpen}>
         <Modal className="max-w-lg bg-white p-6 rounded-2xl shadow-xl border outline-none">
           <Dialog>
             <div className="flex flex-col gap-6">
-              <h2 className="text-xl font-bold">{entregaAEditar ? "Editar" : "Registrar"} Entrega</h2>
+              <h2 id="modal-title" className="text-xl font-bold">{entregaAEditar ? "Editar" : "Registrar"} Entrega</h2>
               <div className="flex flex-col gap-4">
                 <SearchSelect
                   label="Persona que retira"
@@ -285,7 +299,7 @@ export default function HomePage() {
         <Modal className="max-w-md bg-white p-6 rounded-2xl shadow-2xl border-t-4 border-primary-500 z-120 outline-none">
           <Dialog>
             <div className="flex flex-col gap-4">
-              <h2 className="text-lg font-bold">Añadir Nueva Persona</h2>
+              <h2 id="persona-title" className="text-lg font-bold">Añadir Nueva Persona</h2>
               <FormModel
                 fields={[
                   { name: "cedula", label: "Cédula", isRequired: true, placeholder: "0000000000" },
@@ -307,7 +321,7 @@ export default function HomePage() {
         <Modal className="max-w-sm bg-white p-6 rounded-2xl shadow-xl border border-red-100 outline-none">
           <Dialog>
             <div className="flex flex-col gap-5 text-center">
-              <h2 className="text-lg font-bold text-gray-800">¿Eliminar registro?</h2>
+              <h2 id="delete-title" className="text-lg font-bold text-gray-800">¿Eliminar registro?</h2>
               <p className="text-sm text-gray-500">
                 ¿Estás seguro de borrar la entrega de <strong>{entregaAEliminar?.producto}</strong>?
                 Esta acción no se puede deshacer.

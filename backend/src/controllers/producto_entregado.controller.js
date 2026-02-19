@@ -19,7 +19,7 @@ export class ProductoEntregadoCtrl {
       const query = `
             SELECT 
                 pe.cantidad,
-                TO_CHAR(pe.fecha_entrega, 'YYYY-MM-DD') as fecha,
+                TO_CHAR(pe.fecha_entrega::date, 'YYYY-MM-DD') as fecha,
                 prod.tipo_producto AS producto
             FROM producto_entregado pe
             INNER JOIN producto prod ON pe.id_producto = prod.id_producto

@@ -15,9 +15,9 @@ export interface Producto {
 //respuestas para la informacion de las tablas 
 export interface RegistroEntrega {
     id_producto_entregado: number;
-    id_producto: number;       
-    id_persona_retiro: number;   
-    id_persona_entrega: number;   
+    id_producto: number;
+    id_persona_retiro: number;
+    id_persona_entrega: number;
     cantidad: number;
     fecha: string; //'yy-mm-dd'
     quien_retiro: string;
@@ -37,7 +37,7 @@ export interface ApiResponseEntregas {
     };
 }
 
-export type ChartRow ={name:string}& Record<string,number>;
+export type ChartRow = { name: string } & Record<string, number>;
 
 //funcion que procesa la fecha por semana
 export const transformarDatosParaGrafico = (productosAPI: any[], entregasAPI: any[]) => {
@@ -50,20 +50,19 @@ export const transformarDatosParaGrafico = (productosAPI: any[], entregasAPI: an
         const fecha = entrega.fecha;
 
         if (!registrosPorDia[fecha]) {
-            registrosPorDia[fecha] = { name: fecha };
+            registrosPorDia[fecha] = { fecha: fecha };
             tipo_producto.forEach(n => registrosPorDia[fecha][n] = 0);
         }
 
         if (registrosPorDia[fecha].hasOwnProperty(entrega.producto)) {
-            registrosPorDia[fecha][entrega.producto] += entrega.cantidad;
+            registrosPorDia[fecha][entrega.producto] += Number(entrega.cantidad);
         }
     });
 
 
-    const datosGraficos = Object.values(registrosPorDia).sort((a, b) =>
-        new Date(a.name).getTime() - new Date(b.name).getTime()
+    const datosGraficos = Object.values(registrosPorDia).sort((a: any, b: any) =>
+        new Date(a.fecha + "T12:00:00").getTime() - new Date(b.fecha + "T12:00:00").getTime()
     );
-
     return {
         datosGraficos,
         tipo_producto
