@@ -58,14 +58,14 @@ export const CalendarCell = ({ date, isHighlighted, ...props }: CalendarCellProp
                         isSelected &&
                         isBeforeEnd &&
                         isRangeCalendar &&
-                        "after:absolute after:inset-0 after:translate-x-full after:bg-gradient-to-l after:from-transparent after:to-bg-active in-[[role=gridcell]:last-child]:after:hidden",
+                        "after:absolute after:inset-0 after:translate-x-full after:bg-linear-to-l after:from-transparent after:to-bg-active in-[[role=gridcell]:last-child]:after:hidden",
 
                     // Show gradient on first day of month if it's within the selected range.
                     isFirstDayOfMonth &&
                         isSelected &&
                         isAfterStart &&
                         isRangeCalendar &&
-                        "after:absolute after:inset-0 after:-translate-x-full after:bg-gradient-to-r after:from-transparent after:to-bg-active in-[[role=gridcell]:first-child]:after:hidden",
+                        "after:absolute after:inset-0 after:-translate-x-full after:bg-linear-to-l after:from-transparent after:to-bg-active in-[[role=gridcell]:first-child]:after:hidden",
                 );
             }}
         >

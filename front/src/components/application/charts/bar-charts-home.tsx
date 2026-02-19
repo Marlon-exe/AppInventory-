@@ -11,8 +11,8 @@ interface BarData {
 
 const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
-const esLaborable = (isoFecha: string) => {
-    const d = new Date(isoFecha);
+const diasLaborables = (isoFecha: string) => {
+    const d = new Date(isoFecha + "T12:00:00");
     const day = d.getDay();
     return day >= 1 && day <= 5;
 };
@@ -29,7 +29,7 @@ export const BarChart = ({ data, productos }: BarData) => {
     ];
 
 
-    const dataFiltrada = (data ?? []).filter((row) => row?.fecha && esLaborable(row.fecha));
+    const dataFiltrada = (data ?? []).filter((row) => row?.fecha && diasLaborables(row.fecha));
 
     if (!dataFiltrada || dataFiltrada.length === 0) {
         return (
@@ -77,8 +77,8 @@ export const BarChart = ({ data, productos }: BarData) => {
                 <Tooltip
                     content={<ChartTooltipContent />}
                     labelFormatter={(value) => {
-                        const d = new Date(value);
-                        return `${diasSemana[d.getDay()]} ${d.toLocaleDateString("es-EC")}`; // ✅ correcto
+                        const d = new Date(value + "T12:00:00");
+                        return `${diasSemana[d.getDay()]} ${d.toLocaleDateString("es-EC")}`; 
                     }}
                 />
 

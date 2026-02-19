@@ -10,7 +10,8 @@ import { SearchSelect } from "@/components/application/forms/search-select";
 import { Modal, ModalOverlay, Dialog } from "@/components/application/modals/modal";
 import type { RangeValue, DateValue } from "react-aria-components";
 import { getLocalTimeZone, today, startOfWeek, endOfWeek } from "@internationalized/date";
-import { imprimirEntregas } from "@/lib/print-utils";
+import { PDFModal } from "@/components/application/modals/modalHome";
+import { generarPDFEntregas } from "@/lib/print-utils";
 
 
 const COLUMNAS_ENTREGAS: ColumnConfig<RegistroEntrega>[] = [
@@ -46,6 +47,8 @@ export default function HomePage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [entregaAEliminar, setEntregaAEliminar] = useState<RegistroEntrega | null>(null);
+  const [isPdfOpen,setIsPdfOpen] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string>("");
 
   const [entregaAEditar, setEntregaAEditar] = useState<RegistroEntrega | null>(null);
   const [tempPersonaName, setTempPersonaName] = useState("");
@@ -194,6 +197,23 @@ export default function HomePage() {
       setFormLoading(false);
     }
   };
+
+  const handleImprimir = () => {
+    
+    if (!rangoSemanas?.start || !rangoSemanas?.end) {
+      alert("seleccionar un rango de fechas primero");
+      return;
+    }
+
+    const url = generarPDFEntregas(entregas, {
+      start: rangoSemanas?.start.toString(),
+      end: rangoSemanas?.end.toString()
+    });
+    setPdfUrl(url);
+    setIsPdfOpen(true);
+  };
+
+
   return (
     <div className="p-1 ">
       <div className="bg-white p-6 rounded-2xl shadow-sm flex flex-col gap-5">
@@ -217,18 +237,14 @@ export default function HomePage() {
             <BarChart data={chartInfo.data} productos={chartInfo.productos} />
           </div>
         </div>
+
         <div>
-          <Button
-            color="secondary"
-            onClick={() => {
-              if (!rangoSemanas) return;
-              imprimirEntregas(
-                rangoSemanas.start.toString(),
-                rangoSemanas.end.toString()
-              );
-            }}
-          >
-            Imprimir</Button>
+            <Button onClick={handleImprimir}>Imprimir</Button>
+            <PDFModal
+            isOpen = {isPdfOpen}
+            onOpenChange={setIsPdfOpen}
+            pdfUrl={pdfUrl}
+            />
         </div>
 
         <TableModel

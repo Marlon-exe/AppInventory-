@@ -1,139 +1,50 @@
-import { ApiResponseEntregas } from "./chart-utils";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
-export const imprimirEntregas = async (
-    inicio: string,
-    fin: string
-) => {
-    try {
-        const res: ApiResponseEntregas = await fetch(
-            `http://localhost:4000/api/producto-entregado?page=1&limit=100000&inicio=${inicio}&fin=${fin}`
-        ).then(r => r.json());
-        
-        if (!res.value) {
-            console.error("Error al obtener datos");
-            return;
-        }
+export const generarPDFEntregas = (data: any[], rango: { start: string; end: string }) => {
+  const doc = new jsPDF();
+ const logoUrl= "/assets/logo.png"
 
-        const rows = res.data.registros;
+  //Encabezado
+  doc.setFontSize(18);
+  doc.addImage(logoUrl, 'PNG', 170, 10, 25, 25)
+  doc.text("Reporte Entregas", 14, 20);
 
-        const html = `
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Reporte de Entregas</title>
-    <style>
-      @page { 
-        size: A4; 
-        margin: 12mm; 
-      }
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  doc.text(`Periodo; ${rango.start} al ${rango.end}`, 14, 28);
+  doc.text(`Fecha de emision: ${new Date().toLocaleDateString()}`, 14, 34);
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+  const columnConfig = [
+    { header: 'Departamento', dataKey: 'departamento' },
+    { header: 'Producto', dataKey: 'producto' },
+    { header: 'Fecha', dataKey: 'fecha' },
+    { header: 'Retiro', dataKey: 'quien_retiro' },
+    { header: 'Cantidad', dataKey: 'cantidad' },
+  ];
 
-      body {
-        font-family: Arial, sans-serif;
-        padding: 20px;
-        font-size: 12px;
-      }
-
-      h1 { 
-        margin-bottom: 10px;
-        font-size: 20px;
-      }
-
-      .meta {
-        font-size: 11px;
-        margin-bottom: 15px;
-        color: #666;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 11px;
-      }
-
-      th, td {
-        border: 1px solid #ccc;
-        padding: 8px 6px;
-        text-align: left;
-      }
-
-      th {
-        background: #f2f2f2;
-        font-weight: bold;
-      }
-
-      tbody tr:nth-child(even) {
-        background: #fafafa;
-      }
-
-      @media print {
-        body {
-          padding: 0;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Reporte de Entregas</h1>
-    <div class="meta">
-      <strong>Rango:</strong> ${inicio} a ${fin}<br/>
-      <strong>Total registros:</strong> ${rows.length}
-    </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Departamento</th>
-          <th>Producto</th>
-          <th>Fecha</th>
-          <th>Retiró</th>
-          <th>Entregó</th>
-          <th>Cant.</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows.map(r => `
-          <tr>
-            <td>${r.departamento}</td>
-            <td>${r.producto}</td>
-            <td>${r.fecha}</td>
-            <td>${r.quien_retiro}</td>
-            <td>${r.quien_entrega}</td>
-            <td>${r.cantidad}</td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-
-    <script>
-      window.onload = function() {
-        window.print();
-        window.onafterprint = () => window.close();
-      };
-    </script>
-  </body>
-</html>
-`;
-
-        const win = window.open("", "_blank");
-        
-        if (!win) {
-            alert("Por favor, permite las ventanas emergentes para imprimir");
-            return;
-        }
-
-        win.document.open();
-        win.document.write(html);
-        win.document.close();
-
-    } catch (error) {
-        console.error("Error al imprimir:", error);
-        alert("Error al generar el reporte");
+  autoTable(doc, {
+    startY: 40,
+    columns: columnConfig,
+    body: data,
+    theme: 'striped',
+    headStyles: {
+      fillColor: [79, 70, 229],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold'
+    },
+    styles: { fontSize: 9 },
+    columnStyles: {
+      cantidad: { halign: 'center', fontStyle: 'bold' },
+    },
+    didDrawPage: (data) => {
+      doc.setFontSize(8);
+      doc.text(
+        `Pagina ${data.pageNumber}`,
+        data.settings.margin.left,
+        doc.internal.pageSize.height - 10
+      );
     }
-};
+  });
+  return doc.output('bloburl').toString();
+}

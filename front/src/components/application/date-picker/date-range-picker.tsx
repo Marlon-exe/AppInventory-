@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { endOfMonth, endOfWeek, getLocalTimeZone, startOfMonth, startOfWeek, today } from "@internationalized/date";
 import { useControlledState } from "@react-stately/utils";
 import { Calendar as CalendarIcon } from "@untitledui/icons";
@@ -32,10 +32,15 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
         year: "numeric",
     });
     const [value, setValue] = useControlledState(valueProp, defaultValue || null, onChange);
+
+    const [tempValue, setTempValue] = useState<any>(value);
     const [focusedValue, setFocusedValue] = useState<DateValue | null>(null);
 
     const formattedStartDate = value?.start ? formatter.format(value.start.toDate(getLocalTimeZone())) : "Select date";
     const formattedEndDate = value?.end ? formatter.format(value.end.toDate(getLocalTimeZone())) : "Select date";
+    useEffect(() => {
+        setTempValue(value);
+    }, [value]);
 
     const presets = useMemo(
         () => ({
@@ -76,8 +81,9 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
         [locale],
     );
 
+
     return (
-        <AriaDateRangePicker aria-label="Date range picker" shouldCloseOnSelect={false} {...props} value={value} onChange={setValue}>
+        <AriaDateRangePicker aria-label="Date range picker" shouldCloseOnSelect={false} {...props} value={tempValue} onChange={setTempValue}>
             <AriaGroup>
                 <Button size="md" color="secondary" iconLeading={CalendarIcon}>
                     {!value ? <span className="text-placeholder">Select dates</span> : `${formattedStartDate} – ${formattedEndDate}`}
@@ -102,6 +108,8 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
 
                             <div className="flex flex-col">
                                 <RangeCalendar
+                                    value={tempValue}
+                                    onChange={setValue}
                                     focusedValue={focusedValue}
                                     onFocusChange={setFocusedValue}
                                     highlightedDates={highlightedDates}
@@ -125,6 +133,7 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
                                             size="md"
                                             color="secondary"
                                             onClick={() => {
+                                                setTempValue(value);
                                                 onCancel?.();
                                                 close();
                                             }}
@@ -135,6 +144,7 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
                                             size="md"
                                             color="primary"
                                             onClick={() => {
+                                                setTempValue(tempValue);
                                                 onApply?.();
                                                 close();
                                             }}
