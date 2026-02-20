@@ -39,8 +39,15 @@ export class CatalogoCtl {
                 if (items.length === 0) break;
 
                 items.each((_, elemento) => {
-                    const titulo = $(elemento).find('a').attr('title')?.trim();
-                    if (titulo) resultados.push({ nombre: titulo });
+                    const ruta = $(elemento).find('a[title]')
+                    const titulo = ruta.attr('title')?.trim();
+                    const urlProducto = ruta.attr('href')
+                    if (titulo) {
+                        resultados.push({
+                            nombre: titulo,
+                            url: urlProducto ?`https://catalogoelectronico.compraspublicas.gob.ec${urlProducto}` : null
+                        });
+                    }
                 });
 
                 if (totalPaginas > 1) await new Promise(r => setTimeout(r, 200));
@@ -60,13 +67,13 @@ export class CatalogoCtl {
 
         } catch (error) {
             console.error('Scraping Error:', error.message);
-            
+
             return Utils.serverResponse({
                 response: res,
                 code: 500,
                 msg: 'Error interno en el servidor de catálogo',
                 value: false,
-                error: err.message 
+                error: error.message
             });
         }
     }
