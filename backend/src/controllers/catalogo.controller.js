@@ -3,6 +3,8 @@ import * as cheerio from 'cheerio';
 import { Utils } from "../config/utils.js";
 
 export class CatalogoCtl {
+
+    static #URL_RUTA = 'https://catalogoelectronico.compraspublicas.gob.ec';
     static #headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     };
@@ -19,7 +21,7 @@ export class CatalogoCtl {
         }
 
         try {
-            const urlBase = `https://catalogoelectronico.compraspublicas.gob.ec/buscar?valor=${encodeURIComponent(valor)}`;
+            const urlBase = `${this.#URL_RUTA}/buscar?valor=${encodeURIComponent(valor)}`;
             const { data: htmlInicial } = await axios.get(`${urlBase}&pag=1`, { headers: this.#headers });
 
             const raquoMatch = htmlInicial.match(/href="[^"]*pag=(\d+)[^"]*"[^>]*>(?:&raquo;|»)<\/a>/);
@@ -45,7 +47,7 @@ export class CatalogoCtl {
                     if (titulo) {
                         resultados.push({
                             nombre: titulo,
-                            url: urlProducto ?`https://catalogoelectronico.compraspublicas.gob.ec${urlProducto}` : null
+                            url: urlProducto ? `https://catalogoelectronico.compraspublicas.gob.ec${urlProducto}` : null
                         });
                     }
                 });
@@ -75,6 +77,59 @@ export class CatalogoCtl {
                 value: false,
                 error: error.message
             });
+        }
+    }
+
+    static getDetalleProducto = async (req, res) => {
+        try {
+            const { url } = req.query;
+            if (!url) {
+                return Utils.serverResponse({
+                    response: res,
+                    code: 400,
+                    msg: 'Falta de Url del producto',
+                    value: false
+                });
+            }
+
+            const rout = `${this.#URL_RUTA}${url}`;
+            console.log('URL que se está consultando:', rout);
+            const response = await axios.get(rout, { headers: this.#headers });
+            const data = response.data;
+
+            const $ = cheerio.load(data);
+            const especificaciones = {};
+
+            $('#especs-tab #tabla_fixed1 tbody tr').each((_, element) => {
+                const celdas = $(element).find('td');
+
+                if (celdas.length >= 2) {
+                    const propiedad = $(celdas[0]).text().trim();
+                    const valor = $(celdas[1]).text().trim();
+
+                    if (propiedad) {
+                        especificaciones[propiedad] = valor;
+                    }
+                }
+            });
+
+            return Utils.serverResponse({
+                response: res,
+                code: 200,
+                message: 'Especificaciones extraidas',
+                value: true,
+                data: especificaciones
+            })
+
+        } catch (error) {
+            return Utils.serverResponse({
+                response: res,
+                code: 500,
+                msg: 'Error al extraer especificaciones',
+                value: false,
+                error: error.message
+            });
+
         }
     }
 }
