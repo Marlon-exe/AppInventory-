@@ -81,7 +81,6 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
         [locale],
     );
 
-
     return (
         <AriaDateRangePicker aria-label="Date range picker" shouldCloseOnSelect={false} {...props} value={tempValue} onChange={setTempValue}>
             <AriaGroup>

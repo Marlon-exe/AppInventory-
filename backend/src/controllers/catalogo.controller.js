@@ -4,85 +4,70 @@ import { Utils } from "../config/utils.js";
 
 export class CatalogoCtl {
     static #headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     };
+
     static getProductos = async (req, res) => {
         const { valor } = req.query;
         if (!valor) {
-           return Utils.serverResponse({
+            return Utils.serverResponse({
                 response: res,
-                value: 400,
-                msg: 'Falta el parámetro "valor"',
+                code: 400,
+                msg: 'Falta el parámetro "la busqueda"',
                 value: false
             })
         }
-        let paginaActual = 1;
-        let resultados = [];
-        let continuar = true;
-        let ultimaPagina = null;
+
         try {
-            while (continuar) {
-                const url = `https://catalogoelectronico.compraspublicas.gob.ec/buscar?pag=${paginaActual}&valor=${encodeURIComponent(valor)}`;
+            const urlBase = `https://catalogoelectronico.compraspublicas.gob.ec/buscar?valor=${encodeURIComponent(valor)}`;
+            const { data: htmlInicial } = await axios.get(`${urlBase}&pag=1`, { headers: this.#headers });
 
-                const { data } = await axios.get(url, { headers: this.#headers });
+            const raquoMatch = htmlInicial.match(/href="[^"]*pag=(\d+)[^"]*"[^>]*>(?:&raquo;|»)<\/a>/);
+            const totalPaginas = raquoMatch ? parseInt(raquoMatch[1]) : 1;
+
+            console.log(`Buscando: ${valor} | Total de páginas detectadas: ${totalPaginas}`);
+
+            let resultados = [];
+
+            for (let i = 1; i <= totalPaginas; i++) {
+                console.log(`Procesando página ${i} de ${totalPaginas}...`);
+
+                const { data } = await axios.get(`${urlBase}&pag=${i}`, { headers: this.#headers });
                 const $ = cheerio.load(data);
-
-                if (ultimaPagina === null) {
-                    const enlaces = $('.pagination li a');
-                    let maxPagina = 1;
-
-                    enlaces.each((i, elem) => {
-                        const texto = $(elem).text().trim();
-                        const numero = parseInt(texto);
-                        if (!isNaN(numero) && numero > maxPagina) {
-                            maxPagina = numero;
-                        }
-                    });
-
-                    ultimaPagina = maxPagina;
-                    console.log(`Total de paginas ${ultimaPagina}`);
-                }
-                console.log(`pagina  ${paginaActual}`)
-
                 const items = $('.crsl-item');
 
-                if (items.length === 0) {
-                    console.log('no hay mas productos');
-                    continuar = false
-                    break;
-                }
+                if (items.length === 0) break;
 
-                items.each((i, elemento) => {
-                    const enlace = $(elemento).find('a');
-                    const titulo = enlace.attr('title');
-
-                    if (titulo) {
-                        resultados.push({
-                            nombre: titulo.trim()
-                        });
-                    }
+                items.each((_, elemento) => {
+                    const titulo = $(elemento).find('a').attr('title')?.trim();
+                    if (titulo) resultados.push({ nombre: titulo });
                 });
 
-                if (paginaActual >= ultimaPagina) {
-                    console.log(`Se obtuvieron todas las ${paginaActual} paginas`);
-                    continuar = false;
-                } else {
-                    paginaActual++;
-                }
-
-                await new Promise(resolve => setTimeout(resolve, 300));
+                if (totalPaginas > 1) await new Promise(r => setTimeout(r, 200));
             }
 
-            res.json({
-                success: true,
-                total: resultados.length,
-                paginas: ultimaPagina,
-                data: resultados
-            });
+            return Utils.serverResponse({
+                response: res,
+                code: 200,
+                msg: 'Buqueda exitosa',
+                value: true,
+                data: {
+                    totalItems: resultados.length,
+                    totalPaginas: totalPaginas,
+                    productos: resultados
+                }
+            })
 
         } catch (error) {
-            console.error('Error:', error.message);
-            res.status(500).json({error: 'Error de conexión',detalle: error.message});
+            console.error('Scraping Error:', error.message);
+            
+            return Utils.serverResponse({
+                response: res,
+                code: 500,
+                msg: 'Error interno en el servidor de catálogo',
+                value: false,
+                error: err.message 
+            });
         }
     }
 }
