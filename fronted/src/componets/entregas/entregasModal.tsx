@@ -13,9 +13,16 @@ export const EntregasModals = ({ logic }: { logic: any }) => {
             value: p.id_persona,
         })), [logic.personas]);
 
+    const depOptions = useMemo(() =>
+        logic.personaForm.departamentos.map((dep: any) => ({
+            label: dep.nom_departamento,
+            value: dep.id_departamento,
+        })), [logic.personaForm.departamentos]);
+
 
     const retiraSelect = useSearchSelect(personaOptions, logic.personaForm.handleCreateOpen);
     const entregaSelect = useSearchSelect(personaOptions, logic.personaForm.handleCreateOpen);
+    const depSelect = useSearchSelect(depOptions);
 
     return (
         <>
@@ -32,7 +39,7 @@ export const EntregasModals = ({ logic }: { logic: any }) => {
                 ]}
             >
                 <div className="flex flex-col gap-4">
-                   
+
                     <SearchSelect
                         label="Persona que retira"
                         options={retiraSelect.filteredOptions}
@@ -69,13 +76,13 @@ export const EntregasModals = ({ logic }: { logic: any }) => {
                         onChange={(e) => logic.setForm({ ...logic.form, cantidad: e.target.value })}
                     />
                     <I18nProvider locale="es-ES">
-                    <DatePicker
-                        label="Fecha de entrega"
-                        variant="bordered"
-                        value={logic.form.fecha_entrega ? parseDate(logic.form.fecha_entrega) : null}
-                        onChange={(date) => logic.setForm({ ...logic.form, fecha_entrega: date?.toString() ?? '' })}
-                        isDateUnavailable={logic.isDateUnavailable}
-                    />
+                        <DatePicker
+                            label="Fecha de entrega"
+                            variant="bordered"
+                            value={logic.form.fecha_entrega ? parseDate(logic.form.fecha_entrega) : null}
+                            onChange={(date) => logic.setForm({ ...logic.form, fecha_entrega: date?.toString() ?? '' })}
+                            isDateUnavailable={logic.isDateUnavailable}
+                        />
                     </I18nProvider>
                 </div>
             </ModalBase>
@@ -107,18 +114,16 @@ export const EntregasModals = ({ logic }: { logic: any }) => {
                         onChange={(e) => logic.personaForm.setForm({ ...logic.personaForm.form, nombre: e.target.value })}
                     />
 
-                    <Select
+                    <SearchSelect
                         label="Departamento"
-                        variant="bordered"
-                        selectedKeys={logic.personaForm.form.id_departamento ? [String(logic.personaForm.form.id_departamento)] : []}
-                        onSelectionChange={(keys) => logic.personaForm.setForm({ ...logic.personaForm.form, id_departamento: Number([...keys][0]) })}
-                    >
-                        {logic.personaForm.departamentos.map((dep: any) => (
-                            <SelectItem key={String(dep.id_departamento)}>
-                                {dep.nom_departamento}
-                            </SelectItem>
-                        ))}
-                    </Select>
+                        placeholder="Buscar departamento..."
+                        options={depSelect.filteredOptions}
+                        value={logic.personaForm.form.id_departamento}
+                        onInputChange={depSelect.handleInputChange}
+                        onSelectionChange={(key) => depSelect.handleSelectionChange(key, (val) =>
+                            logic.personaForm.setForm({ ...logic.personaForm.form, id_departamento: val })
+                        )}
+                    />
                 </div>
             </ModalBase>
 
@@ -140,13 +145,13 @@ export const EntregasModals = ({ logic }: { logic: any }) => {
                         variant="bordered"
                     />
                     <I18nProvider locale="es-ES">
-                    <DatePicker
-                        label="Fecha de entrega"
-                        variant="bordered"
-                        value={logic.editForm.fecha_entrega ? parseDate(logic.editForm.fecha_entrega) : null}
-                        onChange={(date) => logic.setEditForm({ ...logic.editForm, fecha_entrega: date?.toString() ?? '' })}
-                         isDateUnavailable={logic.isDateUnavailable}
-                    />
+                        <DatePicker
+                            label="Fecha de entrega"
+                            variant="bordered"
+                            value={logic.editForm.fecha_entrega ? parseDate(logic.editForm.fecha_entrega) : null}
+                            onChange={(date) => logic.setEditForm({ ...logic.editForm, fecha_entrega: date?.toString() ?? '' })}
+                            isDateUnavailable={logic.isDateUnavailable}
+                        />
                     </I18nProvider>
 
                     <SearchSelect

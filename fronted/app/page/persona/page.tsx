@@ -3,6 +3,8 @@ import { usePersonaLogic } from "@/src/hooks/personaHooks/personaLogic";
 import { TableBase } from "@/src/componets/ui/table";
 import { ModalBase } from "@/src/componets/ui/modal";
 import { Input, Button, Select, SelectItem, Spinner } from "@heroui/react";
+import { SearchSelect } from "@/src/componets/ui/autoComplete";
+import { useSearchSelect } from "@/src/hooks/inicioHooks/searchSelectHook";
 
 const columns = [
     { key: 'id_persona', label: 'ID' },
@@ -34,6 +36,13 @@ export default function PersonaPage() {
         handleDeleteClose,
         handleDeleteConfirm,
     } = usePersonaLogic();
+
+    const depOption = departamentos.map((dep: any) => ({
+        label: dep.nom_departamento,
+        value: dep.id_departamento
+    }));
+
+    const depSelect = useSearchSelect(depOption)
 
     return (
         <div className="flex flex-col gap-3 p-6 w-full">
@@ -84,22 +93,16 @@ export default function PersonaPage() {
                     value={form.nombre}
                     onChange={(e) => setForm({ ...form, nombre: e.target.value })}
                 />
-                <Select
+                <SearchSelect
                     label="Departamento"
-                    placeholder="Selecciona un departamento"
-                    variant="bordered"
-                    selectedKeys={form.id_departamento ? [String(form.id_departamento)] : []}
-                    onSelectionChange={(keys) => setForm({
-                        ...form,
-                        id_departamento: Number([...keys][0])
-                    })}
-                >
-                    {departamentos.map((dep) => (
-                        <SelectItem key={String(dep.id_departamento)}>
-                            {dep.nom_departamento}
-                        </SelectItem>
-                    ))}
-                </Select>
+                    placeholder="Buscar departamento..."
+                    options={depSelect.filteredOptions}
+                    value={form.id_departamento}
+                    onInputChange={depSelect.handleInputChange}
+                    onSelectionChange={(key) => depSelect.handleSelectionChange(key, (val) =>
+                        setForm({ ...form, id_departamento: val })
+                    )}
+                />
             </ModalBase>
             <ModalBase
                 isOpen={isNotFoundOpen}
