@@ -38,6 +38,9 @@ export const ENDPOINTS = {
     DETALLE: (url: string) => `${BASE_URL}/catalogo/detalle?url=${encodeURIComponent(url)}`,
   },
 
-  CONSULTA:(cedula:string)=>
-    `https://servicios.portoviejo.gob.ec:27514/catastro/api/datospersonacedula?persona.cedularuc=${cedula}`
-};
+  CONSULTA: (cedula: string) =>
+    `https://servicios.portoviejo.gob.ec:27514/catastro/api/datospersonacedula?persona.cedularuc=${cedula}`,
+
+  IMAGE: (cedula: string) =>
+    `https://servicios.portoviejo.gob.ec:27514/dinardap/api/imagencedula?persona.cedularuc=${cedula}`,
+}
