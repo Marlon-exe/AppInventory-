@@ -25,6 +25,7 @@ const navItems = [
   { label: "Personas", href: "/page/persona" },
   { label: "Departamentos", href: "/page/departamento" },
   { label: "Reportes", href: "/page/reportes" },
+  { label: "Datos Personales", href: "/page/datosPersonales" },
 
 ];
 
